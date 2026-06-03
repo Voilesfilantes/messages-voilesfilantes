@@ -300,36 +300,66 @@ let S = {
 };
 
 // ══════════════════════════════════════════════════════════
-// DEFAULTS (all editable in UI — no need to touch the HTML)
+// DEFAULTS — séparés par langue pour les champs texte
+// Les champs neutres (horaires, prix, baie, repas, fruit)
+// sont partagés entre les deux langues.
 // ══════════════════════════════════════════════════════════
-const DEFAULTS = {
+const DEFAULTS_SHARED = {
   porquerolles: {
     heureDepart:'10:00', heureRetour:'17:00', heureQuitterPorte:'16:00',
     navDuree:'1h - 1h30', prix:'150',
     baie:'une baie à Porquerolles, choisie en fonction du vent et de la houle',
-    activites:'Vous pourrez profiter d\'un apéro, du stand up paddle, d\'une pause baignade / snorkelling (masques et tubas fournis si besoin) et d\'un repas ainsi que des boissons servis à bord.',
-    deuxiemeArret:'Si le temps le permet nous réalisons un deuxième arrêt généralement après le repas du midi, toujours au plus protégé du vent et de la houle.',
     repasPlat:'Poké Bowl : riz collant vinaigré, crudités et poulet mariné',
     fruit:'pastèque, ananas ou melon',
-    allergiesNote:'veuillez nous informer de toute allergie ou régime alimentaire spécifique',
     cocktailDesc:'rosé, jus de citron, sirop de fraise et feuilles de basilic',
-    rdvItineraire:'Depuis le port, va à gauche face à la mer et traverse les 2 petits ponts en bois. Au bout du deuxième pont, retrouve-nous à côté de la digue en pierre, les pieds dans l\'eau. Tu pourras distinguer les bouées jaunes du chenal — c\'est là qu\'on vient te chercher en annexe.',
-    rdvAgilite:'Ce transfert nécessite une certaine agilité : il faut pouvoir monter à bord de l\'annexe par soi-même, puis à bord du voilier depuis l\'annexe.',
-    reglementText:'La consommation ou la possession de produits illicites à bord est strictement interdite. Tout manquement pourra entraîner l\'interruption immédiate de la sortie et le débarquement des passagers concernés, sans possibilité de remboursement. Merci de votre compréhension.',
   },
   tapas: {
     heureDepart:'18:30', heureRetour:'21:30', heureQuitterPorte:'21:00',
     navDuree:'30 min - 45 min', prix:'85',
     baie:'la baie d\'Hyères proche de la presqu\'île de Giens',
-    activites:'Vous pourrez profiter du stand up paddle, d\'une pause baignade / snorkelling (masques et tubas fournis si besoin) et de boissons et tapas servis à bord, tout cela en admirant un magnifique coucher de soleil.',
-    deuxiemeArret:'',
     repasPlat:'tapas maison',
     fruit:'',
-    allergiesNote:'veuillez nous informer de toute allergie ou contre-indication alimentaire',
     cocktailDesc:'rosé, jus de citron, sirop de fraise et feuilles de basilic',
-    rdvItineraire:'Depuis le port, va à gauche face à la mer et traverse les 2 petits ponts en bois. Au bout du deuxième pont, retrouve-nous à côté de la digue en pierre, les pieds dans l\'eau. Tu pourras distinguer les bouées jaunes du chenal — c\'est là qu\'on vient te chercher en annexe.',
-    rdvAgilite:'Ce transfert nécessite une certaine agilité : il faut pouvoir monter à bord de l\'annexe par soi-même, puis à bord du voilier depuis l\'annexe.',
-    reglementText:'La consommation ou la possession de produits illicites à bord est strictement interdite. Tout manquement pourra entraîner l\'interruption immédiate de la sortie et le débarquement des passagers concernés, sans possibilité de remboursement. Merci de votre compréhension.',
+  }
+};
+
+// Champs qui changent selon la langue
+const DEFAULTS_TEXT = {
+  fr: {
+    porquerolles: {
+      activites:'Vous pourrez profiter d\'un apéro, du stand up paddle, d\'une pause baignade / snorkelling (masques et tubas fournis si besoin) et d\'un repas ainsi que des boissons servis à bord.',
+      deuxiemeArret:'Si le temps le permet nous réalisons un deuxième arrêt généralement après le repas du midi, toujours au plus protégé du vent et de la houle.',
+      allergiesNote:'veuillez nous informer de toute allergie ou régime alimentaire spécifique',
+      rdvItineraire:'Depuis le port, va à gauche face à la mer et traverse les 2 petits ponts en bois. Au bout du deuxième pont, retrouve-nous à côté de la digue en pierre, les pieds dans l\'eau. Tu pourras distinguer les bouées jaunes du chenal — c\'est là qu\'on vient te chercher en annexe.',
+      rdvAgilite:'Ce transfert nécessite une certaine agilité : il faut pouvoir monter à bord de l\'annexe par soi-même, puis à bord du voilier depuis l\'annexe.',
+      reglementText:'La consommation ou la possession de produits illicites à bord est strictement interdite. Tout manquement pourra entraîner l\'interruption immédiate de la sortie et le débarquement des passagers concernés, sans possibilité de remboursement. Merci de votre compréhension.',
+    },
+    tapas: {
+      activites:'Vous pourrez profiter du stand up paddle, d\'une pause baignade / snorkelling (masques et tubas fournis si besoin) et de boissons et tapas servis à bord, tout cela en admirant un magnifique coucher de soleil.',
+      deuxiemeArret:'',
+      allergiesNote:'veuillez nous informer de toute allergie ou contre-indication alimentaire',
+      rdvItineraire:'Depuis le port, va à gauche face à la mer et traverse les 2 petits ponts en bois. Au bout du deuxième pont, retrouve-nous à côté de la digue en pierre, les pieds dans l\'eau. Tu pourras distinguer les bouées jaunes du chenal — c\'est là qu\'on vient te chercher en annexe.',
+      rdvAgilite:'Ce transfert nécessite une certaine agilité : il faut pouvoir monter à bord de l\'annexe par soi-même, puis à bord du voilier depuis l\'annexe.',
+      reglementText:'La consommation ou la possession de produits illicites à bord est strictement interdite. Tout manquement pourra entraîner l\'interruption immédiate de la sortie et le débarquement des passagers concernés, sans possibilité de remboursement. Merci de votre compréhension.',
+    }
+  },
+  en: {
+    porquerolles: {
+      activites:'You can enjoy an aperitif, stand-up paddle, a swimming / snorkelling break (masks and snorkels provided if needed), a meal and drinks served on board.',
+      deuxiemeArret:'Weather permitting, we make a second stop, usually after lunch, always in the most sheltered spot from wind and swell.',
+      allergiesNote:'please inform us of any allergies or specific dietary requirements',
+      rdvItineraire:'From the harbour, turn left when facing the sea and cross the 2 small wooden bridges. At the end of the second bridge, meet us next to the stone jetty, feet in the water. You\'ll spot the yellow channel buoys — that\'s where we\'ll come to pick you up by dinghy.',
+      rdvAgilite:'This transfer requires some agility: you need to be able to board the dinghy on your own, then climb onto the sailboat from the dinghy.',
+      reglementText:'The consumption or possession of illicit substances on board is strictly prohibited. Any breach may result in the immediate interruption of the trip and disembarkation of the passengers concerned, with no possibility of reimbursement. Thank you for your understanding.',
+    },
+    tapas: {
+      activites:'You can enjoy stand-up paddle, a swimming / snorkelling break (masks and snorkels provided if needed), drinks and tapas served on board — all while admiring a magnificent sunset.',
+      deuxiemeArret:'',
+      allergiesNote:'please inform us of any food allergies or intolerances',
+      rdvItineraire:'From the harbour, turn left when facing the sea and cross the 2 small wooden bridges. At the end of the second bridge, meet us next to the stone jetty, feet in the water. You\'ll spot the yellow channel buoys — that\'s where we\'ll come to pick you up by dinghy.',
+      rdvAgilite:'This transfer requires some agility: you need to be able to board the dinghy on your own, then climb onto the sailboat from the dinghy.',
+      reglementText:'The consumption or possession of illicit substances on board is strictly prohibited. Any breach may result in the immediate interruption of the trip and disembarkation of the passengers concerned, with no possibility of reimbursement. Thank you for your understanding.',
+    }
   }
 };
 
@@ -524,8 +554,16 @@ function init(){
 }
 
 function loadDefaults(trip){
-  const d=DEFAULTS[trip];
-  Object.keys(d).forEach(k=>{ const el=document.getElementById(k); if(el) el.value=d[k]; });
+  // Shared fields (times, prices, dish names — language-neutral)
+  const shared = DEFAULTS_SHARED[trip];
+  Object.keys(shared).forEach(k=>{ const el=document.getElementById(k); if(el) el.value=shared[k]; });
+  // Language-specific text fields
+  loadTextDefaults(S.lang, trip);
+}
+
+function loadTextDefaults(lang, trip){
+  const txt = DEFAULTS_TEXT[lang][trip];
+  Object.keys(txt).forEach(k=>{ const el=document.getElementById(k); if(el) el.value=txt[k]; });
 }
 
 function buildCompoList(){
@@ -548,6 +586,8 @@ function buildCompoList(){
 function setLang(l){
   S.lang=l;
   ['fr','en'].forEach(x=>document.getElementById('btn-'+x).classList.toggle('active',x===l));
+  // Reload language-specific text fields
+  loadTextDefaults(l, S.trip);
   buildCompoList();
   render();
 }
