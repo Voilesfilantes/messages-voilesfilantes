@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⛵ Messages · Voiles Filantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:linear-gradient(160deg,#07141f 0%,#0b1e30 55%,#081929 100%);min-height:100vh;font-family:'DM Sans',sans-serif;color:#e8f4f8;padding-bottom:60px;}
+input,textarea{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:7px;padding:7px 11px;color:#e8f4f8;font-size:13px;font-family:'DM Mono',monospace;outline:none;width:100%;transition:border-color .2s;}
+input:focus,textarea:focus{border-color:rgba(126,205,196,0.5);}
+input::placeholder,textarea::placeholder{color:rgba(255,255,255,0.25);}
+input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.6);}
+textarea{resize:vertical;line-height:1.5;}
+button{cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:rgba(126,205,196,0.25);border-radius:4px;}
+
+header{background:rgba(0,0,0,0.28);border-bottom:1px solid rgba(255,255,255,0.06);padding:15px 28px;display:flex;align-items:center;justify-content:space-between;}
+.brand-name{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:.04em;}
+.brand-sub{font-size:10px;color:#7ecdc4;letter-spacing:.18em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-top:2px;}
+
+.lang-toggle{display:flex;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:9px;overflow:hidden;}
+.lang-btn{background:transparent;border:none;color:rgba(255,255,255,.35);padding:7px 14px;font-size:11px;letter-spacing:.1em;display:flex;align-items:center;gap:5px;border-right:1px solid rgba(255,255,255,0.07);}
+.lang-btn:last-child{border-right:none;}
+.lang-btn.active{background:rgba(126,205,196,.18);color:#7ecdc4;font-weight:600;}
+
+/* ── Mobile tab bar ── */
+#tab-bar{display:none;position:sticky;top:0;z-index:100;background:#0a1b2a;border-bottom:1px solid rgba(255,255,255,.08);padding:10px 16px;}
+#tab-bar .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.tab-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.45);padding:10px;font-size:13px;font-family:'DM Mono',monospace;letter-spacing:.04em;}
+.tab-btn.active{background:rgba(126,205,196,.15);border-color:rgba(126,205,196,.45);color:#7ecdc4;}
+
+/* ── Desktop layout ── */
+#app{display:grid;grid-template-columns:370px 1fr;max-width:1220px;margin:0 auto;padding:20px 20px 0;gap:0;min-height:calc(100vh - 62px);}
+#left{padding-right:18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(100vh - 82px);padding-bottom:24px;}
+#right{padding-left:18px;display:flex;flex-direction:column;gap:12px;}
+
+/* ── Mobile overrides ── */
+@media(max-width:700px){
+  #tab-bar{display:block;}
+  header .brand-sub{display:none;}
+  header{padding:12px 16px;}
+  .brand-name{font-size:17px;}
+  #app{display:block;padding:0;}
+  #left{
+    padding:16px 16px 100px;
+    max-height:none;
+    overflow-y:visible;
+  }
+  #left.tab-hidden{display:none;}
+  #right{
+    padding:16px 16px 100px;
+  }
+  #right.tab-hidden{display:none;}
+  .preview-top{display:none;}
+  #preview-box{
+    max-height:none;
+    min-height:auto;
+    font-size:14px;
+  }
+  #preview-text{font-size:14px;line-height:1.75;}
+  #copy-btn{
+    position:fixed;
+    bottom:16px;left:16px;right:16px;
+    z-index:200;
+    border-radius:14px;
+    padding:15px;
+    font-size:15px;
+    box-shadow:0 4px 24px rgba(0,0,0,.5);
+  }
+  .grid2{grid-template-columns:1fr 1fr;}
+}
+
+.sec-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-bottom:8px;}
+.field-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7ecdc4;font-family:'DM Mono',monospace;margin-bottom:5px;}
+.field-hint{font-size:10px;color:rgba(255,255,255,.25);font-family:'DM Sans',sans-serif;margin-top:4px;line-height:1.4;}
+
+.trip-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.trip-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:9px;color:rgba(255,255,255,.45);padding:10px 8px;font-size:12px;line-height:1.5;white-space:pre-line;}
+.trip-btn.active{background:rgba(126,205,196,.15);border-color:rgba(126,205,196,.5);color:#7ecdc4;}
+
+.compo-grid{display:flex;flex-direction:column;gap:6px;}
+.compo-btn{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;color:rgba(255,255,255,.5);padding:11px 14px;font-size:12px;text-align:left;display:flex;flex-direction:column;gap:3px;}
+.compo-btn .ct{font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:7px;}
+.compo-btn .cd{font-size:11px;color:rgba(255,255,255,.35);font-family:'DM Sans',sans-serif;}
+.compo-btn.active{background:rgba(126,205,196,.1);border-color:rgba(126,205,196,.4);}
+.compo-btn.active .ct{color:#c5eae7;}
+.compo-btn.active .cd{color:rgba(126,205,196,.6);}
+
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.06);cursor:pointer;user-select:none;transition:all .15s;margin-bottom:5px;}
+.toggle-row.on{background:rgba(126,205,196,.05);border-color:rgba(126,205,196,.18);}
+.toggle-row span{font-size:13px;color:rgba(255,255,255,.45);}
+.toggle-row.on span{color:#e8f4f8;}
+.switch{width:38px;height:20px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);position:relative;flex-shrink:0;transition:all .2s;}
+.switch.on{background:rgba(126,205,196,.45);border-color:rgba(126,205,196,.6);}
+.switch-knob{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .2s;}
+.switch.on .switch-knob{left:18px;background:#7ecdc4;}
+
+.accordion{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin-bottom:6px;}
+.acc-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;user-select:none;}
+.acc-title{font-size:12px;letter-spacing:.06em;color:#7ecdc4;font-family:'DM Mono',monospace;}
+.acc-arrow{font-size:12px;color:rgba(255,255,255,.3);transition:transform .2s;}
+.acc-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;}
+.acc-body.hidden{display:none;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
+.tag{display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px 9px;font-size:12px;color:#e8f4f8;font-family:'DM Mono',monospace;}
+.tag-remove{background:none;border:none;color:#7ecdc4;font-size:14px;line-height:1;padding:0;margin-left:2px;}
+.tag-input-row{display:flex;gap:5px;}
+.add-btn{background:rgba(126,205,196,.18);border:1px solid rgba(126,205,196,.35);border-radius:7px;color:#7ecdc4;font-size:17px;width:32px;font-weight:bold;flex-shrink:0;}
+
+.preview-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:3px 10px;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.08em;}
+.badge-teal{background:rgba(126,205,196,.07);border:1px solid rgba(126,205,196,.18);color:#7ecdc4;}
+.badge-gray{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);color:rgba(255,255,255,.4);}
+.badge-compo{background:rgba(200,180,255,.06);border:1px solid rgba(200,180,255,.18);color:rgba(200,180,255,.7);}
+#preview-box{background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;overflow-y:auto;max-height:calc(100vh - 210px);min-height:320px;flex:1;}
+#preview-text{white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.8;color:#cde8f0;font-family:'DM Mono',monospace;}
+#copy-btn{background:rgba(126,205,196,.1);border:1px solid rgba(126,205,196,.28);border-radius:10px;color:#a0d8d0;padding:12px 20px;font-size:13px;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:8px;}
+#copy-btn.copied{background:rgba(126,205,196,.25);border-color:rgba(126,205,196,.7);color:#7ecdc4;}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="brand-name">Voiles Filantes</div>
+    <div class="brand-sub" id="hdr-sub">Générateur de messages clients</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">🇫🇷 FR</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 EN</button>
+    </div>
+    <span style="font-size:24px;">⛵</span>
+  </div>
+</header>
+
+<!-- ══ Mobile tab bar ══ -->
+<div id="tab-bar">
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-config" onclick="switchTab('config')">⚙️ Configuration</button>
+    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">👁 Aperçu</button>
+  </div>
+</div>
+
+<div id="app">
+<!-- ══ LEFT ══ -->
+<div id="left">
+
+  <div>
+    <div class="sec-label">── Type de sortie</div>
+    <div class="trip-grid">
+      <button class="trip-btn active" onclick="setTrip('porquerolles')" id="btn-porq">🌊 Journée\nPorquerolles</button>
+      <button class="trip-btn" onclick="setTrip('tapas')" id="btn-tapas">🌅 Soirée\nTapas</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label" id="lbl-compo">── Type de message</div>
+    <div class="compo-grid" id="compo-list"></div>
+  </div>
+
+  <!-- Custom toggles -->
+  <div id="custom-section" style="display:none;">
+    <div class="sec-label">── Sections à inclure</div>
+    <div>
+      <div class="toggle-row on" onclick="toggleSection('description')" id="row-description"><span id="sec-description">📋 Description</span><div class="switch on" id="sw-description"><div class="switch-knob"></div></div></div>
+      <div class="toggle-row on" onclick="toggleSection('repas')" id="row-repas"><span id="sec-repas">🍽 Repas</span><div class="switch on" id="sw-repas"><div class="switch-knob"></div></div></div>
+      <div class="toggle-row on" onclick="toggleSection('boissons')" id="row-boissons"><span>🥂 Boissons</span><div class="switch on" id="sw-boissons"><div class="switch-knob"></div></div></div>
+      <div class="toggle-row on" onclick="toggleSection('rdv')" id="row-rdv"><span>📍 Lieu & RDV</span><div class="switch on" id="sw-rdv"><div class="switch-knob"></div></div></div>
+      <div class="toggle-row" onclick="toggleSection('reglement')" id="row-reglement"><span>⚠️ Règlement</span><div class="switch" id="sw-reglement"><div class="switch-knob"></div></div></div>
+    </div>
+  </div>
+
+  <!-- ── Params ── -->
+  <div>
+    <div class="sec-label">── Paramètres</div>
+
+    <!-- Horaires -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)"><span class="acc-title">⏱ Horaires & prix</span><span class="acc-arrow">▾</span></div>
+      <div class="acc-body">
+        <div class="grid2">
+          <div><div class="field-label" id="lbl-depart">Départ</div><input type="time" id="heureDepart" oninput="render()"/></div>
+          <div><div class="field-label" id="lbl-retour">Retour</div><input type="time" id="heureRetour" oninput="render()"/></div>
+          <div><div class="field-label" id="lbl-quitter">Quitter l'île</div><input type="time" id="heureQuitterPorte" oninput="render()"/></div>
+          <div><div class="field-label" id="lbl-navdur">Durée nav.</div><input type="text" id="navDuree" oninput="render()"/></div>
+        </div>
+        <div class="grid2">
+          <div><div class="field-label" id="lbl-prix">Prix (€/pers.)</div><input type="number" id="prix" oninput="render()"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description / baie -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)"><span class="acc-title">🗺 Description & baie</span><span class="acc-arrow">▾</span></div>
+      <div class="acc-body hidden">
+        <div>
+          <div class="field-label" id="lbl-baie">Baie / mouillage du jour</div>
+          <input type="text" id="baie" oninput="render()"/>
+        </div>
+        <div>
+          <div class="field-label" id="lbl-activites">Activités proposées</div>
+          <textarea id="activites" rows="3" oninput="render()"></textarea>
+          <div class="field-hint">Ce texte apparaît dans la description après l'arrêt en baie.</div>
+        </div>
+        <div>
+          <div class="field-label" id="lbl-2arret">2ème arrêt (optionnel)</div>
+          <textarea id="deuxiemeArret" rows="2" oninput="render()"></textarea>
+          <div class="field-hint">Laisser vide pour ne pas l'inclure.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RDV -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)"><span class="acc-title">📍 Texte RDV</span><span class="acc-arrow">▾</span></div>
+      <div class="acc-body hidden">
+        <div>
+          <div class="field-label" id="lbl-rdv-itineraire">Itinéraire à pied (instructions)</div>
+          <textarea id="rdvItineraire" rows="4" oninput="render()"></textarea>
+        </div>
+        <div>
+          <div class="field-label" id="lbl-rdv-agilite">Note agilité</div>
+          <textarea id="rdvAgilite" rows="2" oninput="render()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Repas -->
+    <div class="accordion" id="acc-repas">
+      <div class="acc-header" onclick="toggleAcc(this)"><span class="acc-title">🍽 Repas</span><span class="acc-arrow">▾</span></div>
+      <div class="acc-body hidden">
+        <div><div class="field-label" id="lbl-plat">Description du plat</div><textarea id="repasPlat" rows="2" oninput="render()"></textarea></div>
+        <div><div class="field-label" id="lbl-fruit">Fruit du dessert</div><input type="text" id="fruit" oninput="render()"/></div>
+        <div><div class="field-label" id="lbl-allergie">Note allergies</div><input type="text" id="allergiesNote" oninput="render()"/></div>
+      </div>
+    </div>
+
+    <!-- Boissons -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)"><span class="acc-title">🥂 Boissons</span><span class="acc-arrow">▾</span></div>
+      <div class="acc-body hidden">
+        <div>
+          <div class="field-label" id="lbl-na">Non alcoolisées</div>
+          <div class="tags" id="tags-na"></div>
+          <div class="tag-input-row"><input type="text" id="input-na"/><button class="add-btn" onclick="addTag('na')">+</button></div>
+        </div>
+        <div>
+          <div class="field-label" id="lbl-alc">Alcoolisées</div>
+          <div class="tags" id="tags-alc"></div>
+          <div class="tag-input-row"><input type="text" id="input-alc"/><button class="add-btn" onclick="addTag('alc')">+</button></div>
+        </div>
+        <div><div class="field-label" id="lbl-rosito">Description Rosito</div><input type="text" id="cocktailDesc" oninput="render()"/></div>
+      </div>
+    </div>
+
+    <!-- Règlement -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)"><span class="acc-title">⚠️ Règlement</span><span class="acc-arrow">▾</span></div>
+      <div class="acc-body hidden">
+        <div><div class="field-label" id="lbl-reglement">Texte du règlement</div><textarea id="reglementText" rows="3" oninput="render()"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /left -->
+
+<!-- ══ RIGHT ══ -->
+<div id="right">
+  <div class="preview-top">
+    <div class="sec-label" id="lbl-preview">── Aperçu du message</div>
+    <div class="badges">
+      <div class="badge badge-teal" id="badge-lang">🇫🇷 Français</div>
+      <div class="badge badge-gray" id="badge-trip">🌊 Porquerolles · 150€/pers.</div>
+      <div class="badge badge-compo" id="badge-compo">🌙 Message veille</div>
+    </div>
+  </div>
+  <div id="preview-box"><pre id="preview-text">Chargement…</pre></div>
+  <button id="copy-btn" onclick="copyMsg()">📋 Copier le message</button>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let S = {
+  lang: 'fr', trip: 'porquerolles', compo: 'veille',
+  sections: { description:true, repas:true, boissons:true, rdv:true, reglement:false },
+  boissons: {
+    na: ['Coca','Ice tea','Oasis','Eau','Eau pétillante','Sirops'],
+    alc: ['Vin rosé','Sangria','Rosito']
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// DEFAULTS — séparés par langue pour les champs texte
+// Les champs neutres (horaires, prix, baie, repas, fruit)
+// sont partagés entre les deux langues.
+// ══════════════════════════════════════════════════════════
+const DEFAULTS_SHARED = {
+  porquerolles: {
+    heureDepart:'10:00', heureRetour:'17:00', heureQuitterPorte:'16:00',
+    navDuree:'1h - 1h30', prix:'150',
+    baie:'une baie à Porquerolles, choisie en fonction du vent et de la houle',
+    repasPlat:'Poké Bowl : riz collant vinaigré, crudités et poulet mariné',
+    fruit:'pastèque, ananas ou melon',
+    cocktailDesc:'rosé, jus de citron, sirop de fraise et feuilles de basilic',
+  },
+  tapas: {
+    heureDepart:'18:30', heureRetour:'21:30', heureQuitterPorte:'21:00',
+    navDuree:'30 min - 45 min', prix:'85',
+    baie:'la baie d\'Hyères proche de la presqu\'île de Giens',
+    repasPlat:'tapas maison',
+    fruit:'',
+    cocktailDesc:'rosé, jus de citron, sirop de fraise et feuilles de basilic',
+  }
+};
+
+// Champs qui changent selon la langue
+const DEFAULTS_TEXT = {
+  fr: {
+    porquerolles: {
+      activites:'Vous pourrez profiter d\'un apéro, du stand up paddle, d\'une pause baignade / snorkelling (masques et tubas fournis si besoin) et d\'un repas ainsi que des boissons servis à bord.',
+      deuxiemeArret:'Si le temps le permet nous réalisons un deuxième arrêt généralement après le repas du midi, toujours au plus protégé du vent et de la houle.',
+      allergiesNote:'veuillez nous informer de toute allergie ou régime alimentaire spécifique',
+      rdvItineraire:'Depuis le port, va à gauche face à la mer et traverse les 2 petits ponts en bois. Au bout du deuxième pont, retrouve-nous à côté de la digue en pierre, les pieds dans l\'eau. Tu pourras distinguer les bouées jaunes du chenal — c\'est là qu\'on vient te chercher en annexe.',
+      rdvAgilite:'Ce transfert nécessite une certaine agilité : il faut pouvoir monter à bord de l\'annexe par soi-même, puis à bord du voilier depuis l\'annexe.',
+      reglementText:'La consommation ou la possession de produits illicites à bord est strictement interdite. Tout manquement pourra entraîner l\'interruption immédiate de la sortie et le débarquement des passagers concernés, sans possibilité de remboursement. Merci de votre compréhension.',
+    },
+    tapas: {
+      activites:'Vous pourrez profiter du stand up paddle, d\'une pause baignade / snorkelling (masques et tubas fournis si besoin) et de boissons et tapas servis à bord, tout cela en admirant un magnifique coucher de soleil.',
+      deuxiemeArret:'',
+      allergiesNote:'veuillez nous informer de toute allergie ou contre-indication alimentaire',
+      rdvItineraire:'Depuis le port, va à gauche face à la mer et traverse les 2 petits ponts en bois. Au bout du deuxième pont, retrouve-nous à côté de la digue en pierre, les pieds dans l\'eau. Tu pourras distinguer les bouées jaunes du chenal — c\'est là qu\'on vient te chercher en annexe.',
+      rdvAgilite:'Ce transfert nécessite une certaine agilité : il faut pouvoir monter à bord de l\'annexe par soi-même, puis à bord du voilier depuis l\'annexe.',
+      reglementText:'La consommation ou la possession de produits illicites à bord est strictement interdite. Tout manquement pourra entraîner l\'interruption immédiate de la sortie et le débarquement des passagers concernés, sans possibilité de remboursement. Merci de votre compréhension.',
+    }
+  },
+  en: {
+    porquerolles: {
+      activites:'You can enjoy an aperitif, stand-up paddle, a swimming / snorkelling break (masks and snorkels provided if needed), a meal and drinks served on board.',
+      deuxiemeArret:'Weather permitting, we make a second stop, usually after lunch, always in the most sheltered spot from wind and swell.',
+      allergiesNote:'please inform us of any allergies or specific dietary requirements',
+      rdvItineraire:'From the harbour, turn left when facing the sea and cross the 2 small wooden bridges. At the end of the second bridge, meet us next to the stone jetty, feet in the water. You\'ll spot the yellow channel buoys — that\'s where we\'ll come to pick you up by dinghy.',
+      rdvAgilite:'This transfer requires some agility: you need to be able to board the dinghy on your own, then climb onto the sailboat from the dinghy.',
+      reglementText:'The consumption or possession of illicit substances on board is strictly prohibited. Any breach may result in the immediate interruption of the trip and disembarkation of the passengers concerned, with no possibility of reimbursement. Thank you for your understanding.',
+    },
+    tapas: {
+      activites:'You can enjoy stand-up paddle, a swimming / snorkelling break (masks and snorkels provided if needed), drinks and tapas served on board — all while admiring a magnificent sunset.',
+      deuxiemeArret:'',
+      allergiesNote:'please inform us of any food allergies or intolerances',
+      rdvItineraire:'From the harbour, turn left when facing the sea and cross the 2 small wooden bridges. At the end of the second bridge, meet us next to the stone jetty, feet in the water. You\'ll spot the yellow channel buoys — that\'s where we\'ll come to pick you up by dinghy.',
+      rdvAgilite:'This transfer requires some agility: you need to be able to board the dinghy on your own, then climb onto the sailboat from the dinghy.',
+      reglementText:'The consumption or possession of illicit substances on board is strictly prohibited. Any breach may result in the immediate interruption of the trip and disembarkation of the passengers concerned, with no possibility of reimbursement. Thank you for your understanding.',
+    }
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function v(id){ const e=document.getElementById(id); return e ? e.value.trim() : ''; }
+
+// ══════════════════════════════════════════════════════════
+// BLOCK BUILDERS — plain text, no asterisks
+// ══════════════════════════════════════════════════════════
+function buildDesc(lang, trip) {
+  const hd=v('heureDepart'), hr=v('heureRetour'), hq=v('heureQuitterPorte'),
+        nd=v('navDuree'), baie=v('baie'), prix=v('prix'),
+        act=v('activites'), arret2=v('deuxiemeArret');
+  if(lang==='fr'){
+    const arret2line = arret2 ? '\n'+arret2 : '';
+    if(trip==='porquerolles')
+      return `Le départ se fait à ${hd} de La Capte, le transfert au voilier se fait en annexe à partir de la plage de La Capte.\nPuis nous naviguons entre ${nd}.\nNous nous arrêtons dans ${baie}.\n${act}${arret2line}\nNous quittons Porquerolles à ${hq} maximum pour arriver à ${hr} à La Capte.\nLe prix est de ${prix}€ / personne.`;
+    else
+      return `Le départ se fait à ${hd} de La Capte, le transfert au voilier se fait en annexe à partir de la plage.\nPuis nous naviguons entre ${nd}.\nNous réalisons notre arrêt dans ${baie}.\n${act}\n(Veuillez spécifier avant la sortie toute allergie ou contre-indication alimentaire.)\nNous levons l'ancre à ${hq} pour arriver à ${hr} à La Capte.\nLe prix est de ${prix}€ / personne.`;
+  } else {
+    const arret2line = arret2 ? '\n'+arret2 : '';
+    if(trip==='porquerolles')
+      return `Departure is at ${hd} from La Capte; transfer to the sailboat is by dinghy from La Capte beach.\nWe sail for ${nd}.\nWe stop in ${baie}.\n${act}${arret2line}\nWe leave Porquerolles by ${hq} to arrive at ${hr} at La Capte.\nThe price is €${prix} per person.`;
+    else
+      return `Departure is at ${hd} from La Capte; transfer to the sailboat is by dinghy from the beach.\nWe sail for ${nd}.\nWe stop in ${baie}.\n${act}\n(Please specify any food allergies or intolerances before the trip.)\nWe weigh anchor at ${hq} and arrive back at ${hr} at La Capte.\nThe price is €${prix} per person.`;
+  }
+}
+
+function buildRepas(lang, trip) {
+  const plat=v('repasPlat'), fruit=v('fruit'), note=v('allergiesNote');
+  if(trip==='tapas'){
+    return lang==='fr'
+      ? `Des ${plat} vous seront proposés à bord pendant la croisière.\nPS : ${note}.`
+      : `${plat} will be served on board during the cruise.\nPlease note: ${note}.`;
+  }
+  const fruitLine = fruit ? (lang==='fr' ? `\nUn fruit en dessert : généralement ${fruit}.` : `\nA fruit for dessert: usually ${fruit}.`) : '';
+  return lang==='fr'
+    ? `Pour le repas du midi nous proposons des ${plat}.${fruitLine}\nPS : ${note}.`
+    : `For lunch we offer ${plat}.${fruitLine}\nPS: Please ${note}.`;
+}
+
+function buildBoissons(lang) {
+  const na=S.boissons.na.join(', '), cd=v('cocktailDesc');
+  return lang==='fr'
+    ? `Durant l'expérience, des boissons vous sont proposées à bord.\nSans alcool : ${na}.\nAvec alcool : vin rosé + 2 cocktails maison : Sangria et Rosito (${cd}).\n\nTu peux aussi amener tes propres boissons ou snacks si tu le souhaites.`
+    : `During the experience, drinks are offered to you on board.\nNon-alcoholic: ${na}.\nAlcoholic: rosé wine + 2 house cocktails: Sangria and Rosito (${cd}).\n\nYou can also bring your own drinks or snacks if you wish.`;
+}
+
+function buildRdv(lang) {
+  const hd=v('heureDepart'), itin=v('rdvItineraire'), agilite=v('rdvAgilite');
+  return lang==='fr'
+    ? `Rendez-vous à la plage de La Capte (commune d'Hyères) à ${hd}.\nGPS : "rue de La Darse, 83400 La Capte" ou le restaurant "La Pergola".\n\nParking gratuit en bord de mer, proche du port, ou dans les rues du village.\n\nPense à te déchausser avant de monter dans l'annexe, cela sera plus confortable. 🤗\n${agilite ? '\n'+agilite+'\n' : ''}\n${itin}\n\nTu pourras distinguer les bouées jaunes traçant le chenal réservé aux annexes — c'est là que nous viendrons te chercher. 🤗`
+    : `Meeting point at La Capte beach (Hyères) at ${hd}.\nGPS: "rue de La Darse, 83400 La Capte" or the restaurant "La Pergola".\n\nFree parking along the seafront, near the harbour, or in the village streets.\n\nPlease take your shoes off before boarding the dinghy — it will be more comfortable. 🤗\n${agilite ? '\n'+agilite+'\n' : ''}\n${itin}\n\nYou'll see the yellow buoys marking the channel — that's where we'll come to pick you up. 🤗`;
+}
+
+function buildReglement(lang) {
+  const txt = v('reglementText');
+  return lang==='fr'
+    ? `/!\\ ${txt}`
+    : `/!\\ ${txt}`;
+}
+
+// ══════════════════════════════════════════════════════════
+// COMPOSITIONS
+// ══════════════════════════════════════════════════════════
+const COMPOS = [
+  {
+    id:'presentation', emoji:'📋',
+    fr:['Présentation','1ère prise de contact — description complète de la sortie'],
+    en:['Presentation','First contact — full trip description'],
+    trips:['porquerolles','tapas'],
+    build(lang, trip){
+      const label = trip==='porquerolles'
+        ? (lang==='fr' ? 'journée' : 'day')
+        : (lang==='fr' ? 'soirée' : 'evening');
+      const sign = trip==='porquerolles' ? '⛵' : '🌅';
+      return lang==='fr'
+        ? `Bonjour ! 😊\n\nVoici toutes les informations pour votre ${label} à bord de Marannah avec Voiles Filantes.\n\n${buildDesc(lang,trip)}\n\nN'hésitez pas si vous avez des questions. À très bientôt ! ${sign}\n— Voiles Filantes`
+        : `Hello! 😊\n\nHere is all the information for your ${label} aboard Marannah with Voiles Filantes.\n\n${buildDesc(lang,trip)}\n\nDon't hesitate to reach out if you have any questions. See you soon! ${sign}\n— Voiles Filantes`;
+    }
+  },
+  {
+    id:'veille', emoji:'🌙',
+    fr:['Message veille','RDV + repas + boissons + règlement — envoyé la veille'],
+    en:['Day-before message','Meeting point + meal + drinks + rules — sent the evening before'],
+    trips:['porquerolles','tapas'],
+    build(lang, trip){
+      const hd=v('heureDepart'), plat=v('repasPlat'), fruit=v('fruit'), note=v('allergiesNote');
+      const cd=v('cocktailDesc'), itin=v('rdvItineraire'), agilite=v('rdvAgilite');
+      const na=S.boissons.na.join(', ');
+      const reglement=v('reglementText');
+      const fruitLine = fruit ? (lang==='fr' ? ` Un fruit en dessert : généralement ${fruit}.` : ` A fruit for dessert: usually ${fruit}.`) : '';
+      if(lang==='fr'){
+        const repasLine = trip==='porquerolles'
+          ? `Pour le déjeuner, nous vous proposerons des ${plat}.${fruitLine}\nPS : ${note}.`
+          : `Des ${plat} vous seront proposés à bord. PS : ${note}.`;
+        return `Bonjour ! 🙂 On se retrouve demain, voici un récap avant d'embarquer.\n\n📍 Rendez-vous à ${hd} à la plage de La Capte (commune d'Hyères).\nGPS : "rue de La Darse, 83400 La Capte" ou le restaurant "La Pergola".\n\nParking gratuit en bord de mer, proche du port, ou dans les rues du village.\n\n${itin}\n\nPense à te déchausser avant de monter dans l'annexe. 🤗\n${agilite ? agilite+'\n' : ''}\n🍽 ${repasLine}\n\n🥂 Les boissons incluses à bord :\nSans alcool : ${na}.\nAvec alcool : vin rosé + Sangria + Rosito (${cd}).\nTu peux aussi amener tes propres boissons ou snacks.\n\n⚠️ ${reglement}\n\nOn a hâte de vous accueillir à bord ! ⛵\n— Voiles Filantes`;
+      } else {
+        const repasLine = trip==='porquerolles'
+          ? `For lunch, we'll be serving ${plat}.${fruitLine}\nPlease note: ${note}.`
+          : `${plat} will be served on board. Please note: ${note}.`;
+        return `Hello! 🙂 See you tomorrow — here's a quick recap before you come aboard.\n\n📍 Meeting point at ${hd} at La Capte beach (Hyères).\nGPS: "rue de La Darse, 83400 La Capte" or the restaurant "La Pergola".\n\nFree parking along the seafront, near the harbour, or in the village streets.\n\n${itin}\n\nPlease take your shoes off before boarding the dinghy. 🤗\n${agilite ? agilite+'\n' : ''}\n🍽 ${repasLine}\n\n🥂 Drinks included on board:\nNon-alcoholic: ${na}.\nAlcoholic: rosé wine + Sangria + Rosito (${cd}).\nFeel free to bring your own drinks or snacks too.\n\n⚠️ ${reglement}\n\nWe can't wait to welcome you on board! ⛵\n— Voiles Filantes`;
+      }
+    }
+  },
+  {
+    id:'complet', emoji:'📦',
+    fr:['Message complet','Tout en un — description, RDV, repas, boissons, règlement'],
+    en:['Full message','All-in-one — description, meeting point, meal, drinks, rules'],
+    trips:['porquerolles','tapas'],
+    build(lang, trip){
+      const label = trip==='porquerolles' ? (lang==='fr'?'journée':'day') : (lang==='fr'?'soirée':'evening');
+      const sep = '\n\n━━━━━━━━━━━━━━━━━\n\n';
+      const desc = lang==='fr'
+        ? `📋 Programme\n\n${buildDesc(lang,trip)}`
+        : `📋 Schedule\n\n${buildDesc(lang,trip)}`;
+      const rdv = lang==='fr'
+        ? `📍 Lieu de rendez-vous\n\n${buildRdv(lang)}`
+        : `📍 Meeting point\n\n${buildRdv(lang)}`;
+      const repas = lang==='fr'
+        ? `🍽 Repas à bord\n\n${buildRepas(lang,trip)}`
+        : `🍽 On-board meal\n\n${buildRepas(lang,trip)}`;
+      const bois = lang==='fr'
+        ? `🥂 Boissons incluses\n\n${buildBoissons(lang)}`
+        : `🥂 Drinks included\n\n${buildBoissons(lang)}`;
+      const reg = lang==='fr'
+        ? `⚠️ Règlement\n\n${buildReglement(lang)}`
+        : `⚠️ Rules\n\n${buildReglement(lang)}`;
+      const intro = lang==='fr'
+        ? `Bonjour ! 😊 Voici toutes les informations pour votre ${label} à bord de Marannah — Voiles Filantes.`
+        : `Hello! 😊 Here is all the information for your ${label} aboard Marannah — Voiles Filantes.`;
+      const outro = lang==='fr'
+        ? `À très bientôt à bord ! ⛵\n— Voiles Filantes`
+        : `See you soon on board! ⛵\n— Voiles Filantes`;
+      return [intro, desc, rdv, repas, bois, reg, outro].join(sep);
+    }
+  },
+  {
+    id:'repas_boissons', emoji:'🍽',
+    fr:['Repas & boissons','Menu et boissons uniquement'],
+    en:['Meal & drinks','Menu and drinks details only'],
+    trips:['porquerolles','tapas'],
+    build(lang, trip){
+      const cd=v('cocktailDesc'), na=S.boissons.na.join(', ');
+      return lang==='fr'
+        ? `Bonjour ! 🙂 Voici le menu prévu pour votre ${trip==='porquerolles'?'journée':'soirée'} à bord.\n\n🍽 ${buildRepas(lang,trip)}\n\n🥂 Boissons incluses à bord :\nSans alcool : ${na}.\nAvec alcool : vin rosé, Sangria et Rosito (${cd}).\n\nTu peux amener tes propres boissons ou snacks si tu le souhaites. 😊\n— Voiles Filantes`
+        : `Hello! 🙂 Here is the menu for your ${trip==='porquerolles'?'day':'evening'} on board.\n\n🍽 ${buildRepas(lang,trip)}\n\n🥂 Drinks included on board:\nNon-alcoholic: ${na}.\nAlcoholic: rosé wine, Sangria and Rosito (${cd}).\n\nFeel free to bring your own drinks or snacks. 😊\n— Voiles Filantes`;
+    }
+  },
+  {
+    id:'rdv_seul', emoji:'📍',
+    fr:['RDV uniquement','Instructions de rendez-vous seulement'],
+    en:['Meeting point only','Meeting point instructions only'],
+    trips:['porquerolles','tapas'],
+    build(lang){
+      const hd=v('heureDepart');
+      return lang==='fr'
+        ? `Bonjour ! 🙂 Voici comment nous rejoindre demain.\n\n${buildRdv(lang)}\n\nÀ demain ! ⛵\n— Voiles Filantes`
+        : `Hello! 🙂 Here's how to find us tomorrow.\n\n${buildRdv(lang)}\n\nSee you tomorrow! ⛵\n— Voiles Filantes`;
+    }
+  },
+  {
+    id:'custom', emoji:'⚙️',
+    fr:['Personnalisé','Choisir librement les sections'],
+    en:['Custom','Pick sections freely'],
+    trips:['porquerolles','tapas'],
+    build(lang, trip){
+      const parts=[];
+      if(S.sections.description) parts.push(buildDesc(lang,trip));
+      if(S.sections.repas) parts.push(buildRepas(lang,trip));
+      if(S.sections.boissons) parts.push(buildBoissons(lang));
+      if(S.sections.rdv) parts.push(buildRdv(lang));
+      if(S.sections.reglement) parts.push(buildReglement(lang));
+      return parts.length ? parts.join('\n\n─────────────────\n\n') : '— Aucune section sélectionnée —';
+    }
+  }
+];
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  loadDefaults('porquerolles');
+  buildCompoList();
+  renderTags();
+  ['input-na','input-alc'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addTag(id.split('-')[1]);} });
+  });
+  render();
+}
+
+function loadDefaults(trip){
+  // Shared fields (times, prices, dish names — language-neutral)
+  const shared = DEFAULTS_SHARED[trip];
+  Object.keys(shared).forEach(k=>{ const el=document.getElementById(k); if(el) el.value=shared[k]; });
+  // Language-specific text fields
+  loadTextDefaults(S.lang, trip);
+}
+
+function loadTextDefaults(lang, trip){
+  const txt = DEFAULTS_TEXT[lang][trip];
+  Object.keys(txt).forEach(k=>{ const el=document.getElementById(k); if(el) el.value=txt[k]; });
+}
+
+function buildCompoList(){
+  const list=document.getElementById('compo-list'); list.innerHTML='';
+  COMPOS.forEach(c=>{
+    if(!c.trips.includes(S.trip)) return;
+    const btn=document.createElement('button');
+    btn.className='compo-btn'+(c.id===S.compo?' active':'');
+    btn.id='compo-btn-'+c.id;
+    const [title,desc]=S.lang==='fr'?c.fr:c.en;
+    btn.innerHTML=`<div class="ct">${c.emoji} <span>${title}</span></div><div class="cd">${desc}</div>`;
+    btn.onclick=()=>setCompo(c.id);
+    list.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════════════════
+function setLang(l){
+  S.lang=l;
+  ['fr','en'].forEach(x=>document.getElementById('btn-'+x).classList.toggle('active',x===l));
+  // Reload language-specific text fields
+  loadTextDefaults(l, S.trip);
+  buildCompoList();
+  render();
+}
+
+function setTrip(type){
+  S.trip=type;
+  ['porquerolles','tapas'].forEach(t=>document.getElementById('btn-'+{porquerolles:'porq',tapas:'tapas'}[t]).classList.toggle('active',t===type));
+  loadDefaults(type);
+  document.getElementById('acc-repas').style.display = type==='tapas'?'none':'';
+  document.getElementById('row-repas').style.display = type==='tapas'?'none':'';
+  const cur=COMPOS.find(c=>c.id===S.compo);
+  if(!cur||!cur.trips.includes(type)) S.compo='veille';
+  buildCompoList();
+  render();
+}
+
+function setCompo(id){
+  S.compo=id;
+  COMPOS.forEach(c=>{ const b=document.getElementById('compo-btn-'+c.id); if(b) b.classList.toggle('active',c.id===id); });
+  document.getElementById('custom-section').style.display=id==='custom'?'':'none';
+  render();
+}
+
+function toggleSection(key){
+  S.sections[key]=!S.sections[key];
+  const sw=document.getElementById('sw-'+key), row=document.getElementById('row-'+key);
+  sw.classList.toggle('on',S.sections[key]);
+  row.classList.toggle('on',S.sections[key]);
+  render();
+}
+
+function toggleAcc(header){
+  const body=header.nextElementSibling, arrow=header.querySelector('.acc-arrow');
+  body.classList.toggle('hidden');
+  arrow.style.transform=body.classList.contains('hidden')?'':'rotate(180deg)';
+}
+
+function renderTags(){
+  ['na','alc'].forEach(type=>{
+    const c=document.getElementById('tags-'+type); c.innerHTML='';
+    S.boissons[type].forEach((item,i)=>{
+      const span=document.createElement('span'); span.className='tag';
+      span.innerHTML=`${item}<button class="tag-remove" onclick="removeTag('${type}',${i})">×</button>`;
+      c.appendChild(span);
+    });
+  });
+  render();
+}
+function addTag(type){ const inp=document.getElementById('input-'+type),val=inp.value.trim(); if(val&&!S.boissons[type].includes(val)){S.boissons[type].push(val);renderTags();} inp.value=''; }
+function removeTag(type,i){ S.boissons[type].splice(i,1); renderTags(); }
+
+function render(){
+  const compo=COMPOS.find(c=>c.id===S.compo)||COMPOS[0];
+  document.getElementById('preview-text').textContent=compo.build(S.lang,S.trip);
+  document.getElementById('badge-lang').textContent=S.lang==='fr'?'🇫🇷 Français':'🇬🇧 English';
+  document.getElementById('badge-trip').textContent=(S.trip==='porquerolles'?'🌊 Porquerolles':'🌅 Tapas')+' · '+v('prix')+'€/pers.';
+  const [title]=S.lang==='fr'?compo.fr:compo.en;
+  document.getElementById('badge-compo').textContent=compo.emoji+' '+title;
+}
+
+function copyMsg(){
+  navigator.clipboard.writeText(document.getElementById('preview-text').textContent).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent=S.lang==='fr'?'✓ Copié !':'✓ Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=S.lang==='fr'?'📋 Copier le message':'📋 Copy message'; btn.classList.remove('copied'); },2200);
+  });
+}
+
+// ── Mobile tabs ──────────────────────────────────────────
+function switchTab(tab){
+  const isMobile = window.innerWidth <= 700;
+  if(!isMobile) return;
+  document.getElementById('left').classList.toggle('tab-hidden', tab !== 'config');
+  document.getElementById('right').classList.toggle('tab-hidden', tab !== 'preview');
+  document.getElementById('tab-config').classList.toggle('active', tab === 'config');
+  document.getElementById('tab-preview').classList.toggle('active', tab === 'preview');
+}
+
+// Auto-switch to preview on mobile after choosing a composition
+const _origSetCompo = setCompo;
+// Patch setCompo to auto-switch tab on mobile
+function setCompoAndPreview(id){
+  setCompo(id);
+  if(window.innerWidth <= 700) switchTab('preview');
+}
+// Replace compo button handler
+function buildCompoList(){
+  const list=document.getElementById('compo-list'); list.innerHTML='';
+  COMPOS.forEach(c=>{
+    if(!c.trips.includes(S.trip)) return;
+    const btn=document.createElement('button');
+    btn.className='compo-btn'+(c.id===S.compo?' active':'');
+    btn.id='compo-btn-'+c.id;
+    const [title,desc]=S.lang==='fr'?c.fr:c.en;
+    btn.innerHTML=`<div class="ct">${c.emoji} <span>${title}</span></div><div class="cd">${desc}</div>`;
+    btn.onclick=()=>setCompoAndPreview(c.id);
+    list.appendChild(btn);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
